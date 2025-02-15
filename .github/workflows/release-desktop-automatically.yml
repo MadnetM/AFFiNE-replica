@@ -1,32 +1,29 @@
-name: Release Desktop Automatically
-
-on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+-canary.[0-9]+'
-  schedule:
-    - cron: '0 9 * * *'
-
-permissions:
-  contents: write
-  pull-requests: write
-  actions: write
-
 jobs:
   dispatch-release-desktop:
-    runs-on: ubuntu-latest
     name: Setup Release Desktop
+    permissions: write-all
+    runs-on: ubuntu-latest
     steps:
-      - name: dispatch desktop release by tag
-        if: ${{ github.event_name == 'push' }}
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: release-desktop.yml
-          inputs: '{ "build-type": "canary", "is-draft": false, "is-pre-release": true }'
-      - name: dispatch desktop release by schedule
-        if: ${{ github.event_name == 'schedule' }}
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: release-desktop.yml
-          inputs: '{ "build-type": "canary", "is-draft": false, "is-pre-release": true }'
-          ref: canary
+    - name: Collect Workflow Telemetry
+      uses: Nfsaavedra/workflow-telemetry-action@raw_data
+      with:
+        save_raw_stats: true
+    - if: ${{ github.event_name == 'push' }}
+      name: dispatch desktop release by tag
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        inputs: '{ "build-type": "canary", "is-draft": false, "is-pre-release": true
+          }'
+        workflow: release-desktop.yml
+    - if: ${{ github.event_name == 'schedule' }}
+      name: dispatch desktop release by schedule
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        inputs: '{ "build-type": "canary", "is-draft": false, "is-pre-release": true
+          }'
+        ref: canary
+        workflow: release-desktop.yml
+name: Release Desktop Automatically
+'on':
+- workflow_dispatch
+permissions: write-all
